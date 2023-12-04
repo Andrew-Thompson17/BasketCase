@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBA Database</title>
+    <!-- Link to your CSS file -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<div id="navbar">
+    <input type="text" placeholder="Search...">
+    <a href="{{ url_for('players') }}">Players</a>
+    <a href="{{ url_for('teams') }}">Teams</a>
+    <a href="{{ url_for('quiz') }}">Quiz</a>
+</div>
+
+{% block content %}{% endblock %}
+
+</body>
+</html>
