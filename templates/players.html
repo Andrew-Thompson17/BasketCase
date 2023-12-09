@@ -41,12 +41,24 @@
         tbody tr:nth-child(odd) {
             background-color: #2c3e50;
         }
+
+        /* Add this style for the player link */
+        .player-link {
+            color: #ecf0f1; /* Set the text color */
+            text-decoration: none; /* Remove the underline */
+            cursor: pointer; /* Change cursor on hover to indicate it's clickable */
+        }
+
+        .player-link:hover {
+            text-decoration: underline; /* Add underline on hover */
+        }
     </style>
 
     <!-- Bootstrap table classes -->
     <table class="table table-striped" id="player-table">
         <thead class="thead-dark">
             <tr>
+                <th>Rank</th>
                 <th>Player</th>
                 <th>Team</th>
                 <th>PTS</th>
@@ -54,21 +66,20 @@
                 <th>REB</th>
                 <th>FG%</th>
                 <th>EFF</th>
-                <th>Rank</th>
                 <!-- Add other column headers as needed -->
             </tr>
         </thead>
         <tbody>
             {% for player in players %}
                 <tr>
-                    <td>{{ player.PLAYER }}</td>
+                    <td>{{ player.RANK }}</td>
+                    <td><a href="{{ url_for('player_details', player_name=player.PLAYER) }}" class="player-link">{{ player.PLAYER }}</a></td>
                     <td>{{ player.TEAM }}</td>
                     <td>{{ player.PTS }}</td>
                     <td>{{ player.AST }}</td>
                     <td>{{ player.REB }}</td>
                     <td>{{ player.FG_PCT }}</td>
                     <td>{{ player.EFF }}</td>
-                    <td>{{ player.RANK }}</td>
                     <!-- Add other columns as needed -->
                 </tr>
             {% endfor %}
