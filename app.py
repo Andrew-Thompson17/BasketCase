@@ -11,7 +11,7 @@ import pandas as pd
 import base64
 from io import BytesIO
 
-
+from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.pyplot as plt
 import numpy as np
 from urllib.parse import quote
@@ -59,6 +59,40 @@ class NBAStats(db.Model):
 #Create table for regular season team data
 class TeamsRegularSeason(db.Model):
     __tablename__ = 'teams_regular_season'
+
+    rank = db.Column(db.Integer)
+    team_name = db.Column(db.String(255))
+    games_played = db.Column(db.Integer)
+    wins = db.Column(db.Integer)
+    losses = db.Column(db.Integer)
+    win_percentage = db.Column(db.Float)
+    minutes = db.Column(db.Integer)
+    points = db.Column(db.Integer)
+    field_goals_made = db.Column(db.Integer)
+    field_goals_attempted = db.Column(db.Integer)
+    field_goal_percentage = db.Column(db.Float)
+    three_pointers_made = db.Column(db.Integer)
+    three_pointers_attempted = db.Column(db.Integer)
+    three_point_percentage = db.Column(db.Float)
+    free_throws_made = db.Column(db.Integer)
+    free_throws_attempted = db.Column(db.Integer)
+    free_throw_percentage = db.Column(db.Float)
+    offensive_rebounds = db.Column(db.Integer)
+    defensive_rebounds = db.Column(db.Integer)
+    total_rebounds = db.Column(db.Integer,primary_key=True)
+    assists = db.Column(db.Integer)
+    turnovers = db.Column(db.Integer)
+    steals = db.Column(db.Integer)
+    blocks = db.Column(db.Integer)
+    opponent_blocks = db.Column(db.Integer)
+    personal_fouls = db.Column(db.Integer)
+    personal_fouls_drawn = db.Column(db.Integer)
+    plus_minus = db.Column(db.Float)
+    id = db.Column(db.Integer, primary_key=True)
+
+#Create table for playoff team data
+class TeamsPlayoff(db.Model):
+    __tablename__ = 'teams_playoff'
 
     rank = db.Column(db.Integer)
     team_name = db.Column(db.String(255))
@@ -158,10 +192,52 @@ def teams():
     # Pass the data to the template
     return render_template('teams.html', team_names=team_names, data_zipped=data_zipped, table_data=table_data)
 
-# Flask route to render the 'quiz.html' template
-@app.route('/quiz')
-def quiz():
-    return render_template('quiz.html')
+@app.route('/teams_playoff')
+def teams_playoff():
+    # Get playoff scatterplot data from the database
+    playoff_data = db.session.query(
+        TeamsPlayoff.team_name,
+        TeamsPlayoff.wins,
+        TeamsPlayoff.plus_minus
+    ).all()
+
+    # Separate the playoff scatterplot data into lists for Chart.js
+    team_names_playoff = [data[0] for data in playoff_data]
+    wins_playoff = [data[1] for data in playoff_data]
+    plus_minus_playoff = [data[2] for data in playoff_data]
+
+    # Combine wins and plus_minus into a zipped list for playoff
+    data_zipped_playoff = zip(wins_playoff, plus_minus_playoff)
+
+    # Get regular season scatterplot data from the database
+    regular_data = db.session.query(
+        TeamsRegularSeason.team_name,
+        TeamsRegularSeason.wins,
+        TeamsRegularSeason.plus_minus
+    ).all()
+
+    # Separate the regular season scatterplot data into lists for Chart.js
+    team_names_regular = [data[0] for data in regular_data]
+    wins_regular = [data[1] for data in regular_data]
+    plus_minus_regular = [data[2] for data in regular_data]
+
+    # Combine wins and plus_minus into a zipped list for regular season
+    data_zipped_regular = zip(wins_regular, plus_minus_regular)
+
+    # Get table data for playoff
+    table_data_playoff = TeamsPlayoff.query.all()
+
+    # Get table data for regular season
+    table_data_regular = TeamsRegularSeason.query.all()
+
+    # Pass the data to the template
+    return render_template('teams_playoff.html',
+                           team_names_playoff=team_names_playoff,
+                           data_zipped_playoff=data_zipped_playoff,
+                           table_data_playoff=table_data_playoff,
+                           team_names_regular=team_names_regular,
+                           data_zipped_regular=data_zipped_regular,
+                           table_data_regular=table_data_regular)
 
 
 @app.route('/player_details/<player_name>')
@@ -201,11 +277,16 @@ def create_heatmap(player):
         'STL': player_stats.STL,
         'BLK': player_stats.BLK,
     }
+    
+    start_color = '#4BC0C0CC' 
+    end_color = '#FF6384CC'
+    
+    cmap = LinearSegmentedColormap.from_list('custom', [start_color, end_color], N=256)
 
     # Create the heatmap
     correlation_matrix = pd.DataFrame([heatmap_data])
     plt.figure(figsize=(8, 6))
-    heatmap = sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', linewidths=.5)
+    heatmap = sns.heatmap(correlation_matrix, annot=True, cmap=cmap, linewidths=.5)
 
     # Change the color of the category labels
     heatmap.set_xticklabels(heatmap.get_xticklabels(), color='white')
