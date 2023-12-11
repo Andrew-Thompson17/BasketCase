@@ -22,7 +22,7 @@
             <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
             <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
 
-            <!-- Add your custom CSS styles -->
+            
             <style>
                 body {
                     background-color: #2c3e50;
@@ -182,7 +182,7 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', (event) => {
-                // Updated color palette for better distinguishability
+                
                 var colorPalette = [
                     '#1f78b4', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a',
                     '#b15928', '#a6cee3', '#b2df8a', '#fb9a99', '#fdbf6f',
@@ -250,7 +250,7 @@
 
     // Function to toggle Regular Season data visibility
     function toggleRegularSeason() {
-        var regularDataset = teamsScatterPlot.data.datasets[1]; // assuming regular season is the second dataset
+        var regularDataset = teamsScatterPlot.data.datasets[1]; 
         regularDataset.hidden = !regularDataset.hidden;
         teamsScatterPlot.update();
     }
