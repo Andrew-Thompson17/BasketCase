@@ -2,8 +2,120 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-    <div>
-        <h1>Welcome to BasketCase!</h1>
-        <p>This is the homepage content.</p>
+    <head><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"></head>
+    <style>
+        body {
+            background-color: #2c3e50; /* Replace with your desired blue color code */
+            color: #ffffff; /* Set the text color to match the nav bar */
+            margin: 0; /* Remove default margin */
+            overflow-x: hidden; /* Hide horizontal scrollbar */
+        }
+
+        /* Additional Styles */
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .col-md-6 {
+            width: 48%; /* Adjust as needed */
+            margin-bottom: 20px;
+        }
+
+        .col-md-4 {
+            width: 30%; /* Adjust as needed */
+            margin-bottom: 20px;
+        }
+
+        .image-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Maintain aspect ratio and cover container */
+        }
+
+        h2 {
+            color: #3498db; /* Replace with your desired heading color */
+            border-bottom: 2px solid #3498db; /* Underline effect for headings */
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        h3 {
+            margin-top: 10px; /* Add spacing between image title and description */
+        }
+
+        p {
+            line-height: 1.6;
+        }
+    </style>
+
+    <div class="container">
+        <div class="row">
+            <!-- Column 1: Project Overview and How It Works -->
+            <div class="col-md-6">
+                <h2>BasketCase Overview</h2>
+                <p>BasketCase is a modernized and visual take on NBA Statistics.
+                    BasketCase only uses player and team data from the 2022/2023 season, due to time constraints for the project. 
+                </p>
+
+                <h2>How It Works</h2>
+                <p>The players page brings you to a sortable table of all of the NBA players from the 2022/2023 season.
+                    You can then select and player to get more in depth analysis on them. The same can be done in the Teams and Playoff pages.
+                    The graphs are interactive, allowing the user to toggle some features.
+                </p>
+            </div>
+
+            <!-- Column 2: Introduction and About -->
+            <div class="col-md-6">
+                <h2>Introduction</h2>
+                <p>Other sites provide great, in depth stats and allow for great analaysis.
+                    The only problem is they are often bland and sometimes hard to understand, such as basketball-reference. The goal of BasketCase is to
+                    make stats more accessible.
+                </p>
+
+                <h2>About</h2>
+                <p>BasketCase and the database that backs it were created solely by Andrew Thompson. It is a final project for a Databases class. 
+                    SQLite is the database the stats live in, and the stats were gathered directly from the NBA.
+                </p>
+            </div>
+        </div>
+
+        <!-- Images Section -->
+        <div class="row">
+            
+            <div class="col-md-4">
+                <div class="image-container">
+                    <img src="{{ url_for('static', filename='playerdet.png') }}" alt="Player Detection Image">
+                </div>
+                <h3>Compare Players to League Average</h3>
+                <p>Description for Player Detection Image.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="image-container">
+                    <img src="{{ url_for('static', filename='playoff.png') }}" alt="Heatmap Test Image">
+                </div>
+                <h3>View Teams Season Stats</h3>
+                <p>Description for Heatmap Test Image.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="image-container">
+                    <img src="{{ url_for('static', filename='playoffw.png') }}" alt="Playoff Comparison Image">
+                </div>
+                <h3>Compare Regular Season vs Playoffs</h3>
+                <p>Description for Playoff Comparison Image.</p>
+            </div>
+        </div>
     </div>
 {% endblock %}
