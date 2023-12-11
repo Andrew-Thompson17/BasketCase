@@ -1,6 +1,202 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-    <h1>Teams Page</h1>
-    <!-- Add content specific to teams page -->
+    <div style="background-color: #2c3e50; padding: 10px; color: #ecf0f1;">
+        <h1 style="margin: 0;">Teams Regular Season Stats</h1>
+    </div>
+
+    <div style="width: 100%; margin: auto;">
+        <div id="legend"></div>
+        <!-- Scatterplot Container -->
+        <div id="scatterplot-container" style="width: 90%;">
+            <canvas id="teamsScatterPlot"></canvas>
+        </div>
+        
+        
+        
+        <!-- Data Table Container -->
+        <div id="table-container" style="width: 100%;">
+            <!-- Add Bootstrap and DataTables CDN links -->
+            <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+            <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
+            <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+            <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
+            <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+
+            <!-- Add your custom CSS styles -->
+<style>
+    body {
+        background-color: #2c3e50;
+        margin: 0; /* Remove default margin */
+        overflow-x: hidden; /* Hide horizontal scrollbar */
+    }
+
+    #table-container {
+        width: 100%;
+        overflow-x: auto; /* Enable horizontal scrolling if needed */
+    }
+
+    table {
+        width: 100%; /* Set to 100% to make the table fill the container */
+        max-width: none; /* Disable maximum width to allow the table to expand */
+        margin-top: 20px;
+        background-color: #2c3e50;
+        color: #ecf0f1;
+    }
+
+    th, td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #34495e;
+        color: #ecf0f1;
+        white-space: nowrap; /* Prevent text wrapping */
+        font-size: 12px; /* Reduce font size for all cells */
+    }
+
+    thead {
+        background-color: #2c3e50;
+        color: #ecf0f1;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #34495e;
+    }
+
+    tbody tr:nth-child(odd) {
+        background-color: #2c3e50;
+    }
+</style>
+
+        <!-- Bootstrap table classes -->
+        <table id="teams-table" class="table table-striped">
+    <thead class="thead-dark">
+        <tr>
+            <th>#</th>
+            <th>Team</th>
+            <th>GP</th>
+            <th>Wins</th>
+            <th>Losses</th>
+            <th>Win%</th>
+            <th>MIN</th>
+            <th>PTS</th>
+            <th>FGM</th>
+            <th>FGA</th>
+            <th>FG%</th>
+            <th>3PM</th>
+            <th>3PA</th>
+            <th>3P%</th>
+            <th>FTM</th>
+            <th>FTA</th>
+            <th>FT%</th>
+            <th>OREB</th>
+            <th>DREB</th>
+            <th>REB</th>
+            <th>AST</th>
+            <th>TOV</th>
+            <th>STL</th>
+            <th>BLK</th>
+            <th>BLKA</th>
+            <th>PF</th>
+            <th>PFA</th>
+            <th>+/-</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for team in table_data %}
+            <tr>
+                <td>{{ team.rank }}</td>
+                <td>{{ team.team_name }}</td>
+                <td>{{ team.wins + team.losses }}</td>
+                <td>{{ team.wins }}</td>
+                <td>{{ team.losses }}</td>
+                <td>{{ team.win_percentage }}</td>
+                <td>{{ team.minutes }}</td>
+                <td>{{ team.points }}</td>
+                <td>{{ team.field_goals_made }}</td>
+                <td>{{ team.field_goals_attempted }}</td>
+                <td>{{ team.field_goal_percentage }}</td>
+                <td>{{ team.three_pointers_made }}</td>
+                <td>{{ team.three_pointers_attempted }}</td>
+                <td>{{ team.three_point_percentage }}</td>
+                <td>{{ team.free_throws_made }}</td>
+                <td>{{ team.free_throws_attempted }}</td>
+                <td>{{ team.free_throw_percentage }}</td>
+                <td>{{ team.offensive_rebounds }}</td>
+                <td>{{ team.defensive_rebounds }}</td>
+                <td>{{ team.total_rebounds }}</td>
+                <td>{{ team.assists }}</td>
+                <td>{{ team.turnovers }}</td>
+                <td>{{ team.steals }}</td>
+                <td>{{ team.blocks }}</td>
+                <td>{{ team.opponent_blocks }}</td>
+                <td>{{ team.personal_fouls }}</td>
+                <td>{{ team.personal_fouls_drawn }}</td>
+                <td>{{ team.plus_minus }}</td>
+                
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Updated color palette for better distinguishability
+            var colorPalette = [
+                '#1f78b4', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a',
+                '#b15928', '#a6cee3', '#b2df8a', '#fb9a99', '#fdbf6f',
+                '#cab2d6', '#ffff99', '#b15928', '#8dd3c7', '#fdb462',
+                '#e31a1c', '#fb9a99', '#33a02c', '#a6cee3', '#4BDB74', 
+                '#647ADB', '#DB56C4', '#DB5756', '#DBBE2A', '#DBD937',
+                '#5E4BDB', '#C6DB6E', '#58DB88', '#5191DB', '#DA8FDB'
+            ];
+
+            var teamsData = {
+                labels: {{ team_names|tojson|safe }},
+                datasets: [{
+                    label: 'Wins vs Plus-Minus',
+                    backgroundColor: colorPalette,
+                    borderColor: colorPalette.map(color => color.replace('0.5', '1')),  // Darker border
+                    data: [
+                        {% for win, pm in data_zipped %}
+                            { x: {{ win }}, y: {{ pm }} },
+                        {% endfor %}
+                    ],
+                }],
+            };
+
+            var ctx = document.getElementById('teamsScatterPlot').getContext('2d');
+            var teamsScatterPlot = new Chart(ctx, {
+                type: 'scatter',
+                data: teamsData,
+                options: {
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Wins',
+                                color: 'rgba(255, 255, 255, 0.8)',
+                            },
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                type: 'linear',
+                                text: 'Plus-Minus',
+                                color: 'rgba(255, 255, 255, 0.8)',
+                            },
+                        },
+                    },
+                    
+                },
+            });
+        });
+        $(document).ready(function () {
+            $('#teams-table').DataTable();
+        });
+    </script>
 {% endblock %}

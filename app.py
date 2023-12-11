@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, send_from_directory, request, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
+from sqlalchemy.orm import aliased
 from sqlalchemy import text  # Import the text function
 import matplotlib
 matplotlib.use('Agg')
@@ -25,7 +26,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-#Create Table for NBA DATA
+#Create Table for PLAYER DATA
 class NBAStats(db.Model):
     __tablename__ = 'nba_stats'
 
@@ -53,29 +54,116 @@ class NBAStats(db.Model):
     TOV = db.Column(db.Integer)
     
     EFF = db.Column(db.Integer)
+    id = db.Column(db.Integer, primary_key=True)
+
+#Create table for regular season team data
+class TeamsRegularSeason(db.Model):
+    __tablename__ = 'teams_regular_season'
+
+    rank = db.Column(db.Integer)
+    team_name = db.Column(db.String(255))
+    games_played = db.Column(db.Integer)
+    wins = db.Column(db.Integer)
+    losses = db.Column(db.Integer)
+    win_percentage = db.Column(db.Float)
+    minutes = db.Column(db.Integer)
+    points = db.Column(db.Integer)
+    field_goals_made = db.Column(db.Integer)
+    field_goals_attempted = db.Column(db.Integer)
+    field_goal_percentage = db.Column(db.Float)
+    three_pointers_made = db.Column(db.Integer)
+    three_pointers_attempted = db.Column(db.Integer)
+    three_point_percentage = db.Column(db.Float)
+    free_throws_made = db.Column(db.Integer)
+    free_throws_attempted = db.Column(db.Integer)
+    free_throw_percentage = db.Column(db.Float)
+    offensive_rebounds = db.Column(db.Integer)
+    defensive_rebounds = db.Column(db.Integer)
+    total_rebounds = db.Column(db.Integer,primary_key=True)
+    assists = db.Column(db.Integer)
+    turnovers = db.Column(db.Integer)
+    steals = db.Column(db.Integer)
+    blocks = db.Column(db.Integer)
+    opponent_blocks = db.Column(db.Integer)
+    personal_fouls = db.Column(db.Integer)
+    personal_fouls_drawn = db.Column(db.Integer)
+    plus_minus = db.Column(db.Float)
+    id = db.Column(db.Integer, primary_key=True)
+
+team_name_mapping = {
+    'MIL': 'Milwaukee Bucks',
+    'BOS': 'Boston Celtics',
+    'PHI': 'Philadelphia 76ers',
+    'DEN': 'Denver Nuggets',
+    'CLE': 'Cleveland Cavaliers',
+    'MEM': 'Memphis Grizzlies',
+    'SAC': 'Sacramento Kings',
+    'NYK': 'New York Knicks',
+    'BKN': 'Brooklyn Nets',
+    'PHX': 'Phoenix Suns',
+    'GSW': 'Golden State Warriors',
+    'LAC': 'LA Clippers',
+    'MIA': 'Miami Heat',
+    'LAL': 'Los Angeles Lakers',
+    'MIN': 'Minnesota Timberwolves',
+    'NOP': 'New Orleans Pelicans',
+    'ATL': 'Atlanta Hawks',
+    'TOR': 'Toronto Raptors',
+    'CHI': 'Chicago Bulls',
+    'OKC': 'Oklahoma City Thunder',
+    'DAL': 'Dallas Mavericks',
+    'UTA': 'Utah Jazz',
+    'IND': 'Indiana Pacers',
+    'WAS': 'Washington Wizards',
+    'ORL': 'Orlando Magic',
+    'POR': 'Portland Trail Blazers',
+    'CHA': 'Charlotte Hornets',
+    'HOU': 'Houston Rockets',
+    'SAS': 'San Antonio Spurs',
+    'DET': 'Detroit Pistons',
+}
 
 # Flask route to render the 'layout.html' template
 @app.route('/')
 def index():
-    return render_template('layout.html')
+    return render_template('home.html')
 
 # Flask route to render the 'players.html' template
 @app.route('/players')
 def players():
     all_players = NBAStats.query.all()
+    
     return render_template('players.html', players=all_players)
 
 # Flask route to render the 'teams.html' template
 @app.route('/teams')
 def teams():
-    return render_template('teams.html')
+    # Get scatterplot data from the database
+    scatterplot_data = db.session.query(
+        TeamsRegularSeason.team_name,
+        TeamsRegularSeason.wins,
+        TeamsRegularSeason.plus_minus
+    ).all()
+
+    # Separate the scatterplot data into lists for Chart.js
+    team_names = [data[0] for data in scatterplot_data]
+    wins = [data[1] for data in scatterplot_data]
+    plus_minus = [data[2] for data in scatterplot_data]
+
+    # Combine wins and plus_minus into a zipped list
+    data_zipped = zip(wins, plus_minus)
+
+    table_data = TeamsRegularSeason.query.all()
+
+    # Pass the data to the template
+    return render_template('teams.html', team_names=team_names, data_zipped=data_zipped, table_data=table_data)
 
 # Flask route to render the 'quiz.html' template
 @app.route('/quiz')
 def quiz():
     return render_template('quiz.html')
 
-# app.py
+
 @app.route('/player_details/<player_name>')
 def player_details(player_name):
     player = NBAStats.query.filter_by(PLAYER=player_name).first()
@@ -83,16 +171,25 @@ def player_details(player_name):
     if not player:
         return render_template('error.html', error_message='Player not found')
 
+    # Get the full team name using the mapping
+    full_team_name = team_name_mapping.get(player.TEAM)
+
+    # Perform a custom join based on team names
+    team_alias = aliased(TeamsRegularSeason)
+    team = db.session.query(team_alias).filter_by(team_name=full_team_name).first()
     league_averages = {
         'FG_PCT': db.session.query(func.avg(NBAStats.FG_PCT)).scalar(),
         'FG3_PCT': db.session.query(func.avg(NBAStats.FG3_PCT)).scalar(),
-        # Add more statistics as needed
+        'FGM': db.session.query(func.avg(NBAStats.FGM)).scalar(),
+        'FG3M': db.session.query(func.avg(NBAStats.FG3M)).scalar(),
+        'FTM': db.session.query(func.avg(NBAStats.FTM)).scalar(),
+        'FT_PCT': db.session.query(func.avg(NBAStats.FT_PCT)).scalar(),
     }
 
     player_chart = create_radar_chart(player)
     heatmap_data = create_heatmap(player)
 
-    return render_template('player_details.html', player=player, player_chart=player_chart, heatmap_data=heatmap_data)
+    return render_template('player_details.html', player=player, player_chart=player_chart, heatmap_data=heatmap_data, league_averages=league_averages, team=team)
 
 def create_heatmap(player):
     # Convert player stats to DataFrame

@@ -7,54 +7,169 @@
         <h1 style="margin: 0;">Player Details</h1>
     </div>
 
-    <div>
-        <h2>{{ player.PLAYER }}</h2>
-        <p>Team: {{ player.TEAM }}</p>
+    <style>
+        .charts-container {
+            display: flex;
+            justify-content: space-between;
+            
+        }
+
+        .scatter-plot-container,
+        .heatmap-container {
+            width: 48%; /* Adjust as needed */
+        }
+
+        .heatmap-container {
+            position: relative;
+            padding-bottom: calc((1 / {{ heatmap_aspect_ratio }}) * 100%);
+        }
+
+        .heatmap-container img {
+            position: absolute;
+            width: 80%;
+            height: 100%;
+        }
+    </style>
+
+    <div class="charts-container">
         <!-- Scatter plot -->
-        <div style="top:60px; left:10px; width:50%; height:50%;">
-            <!--<h3>Shooting Performance</h3> -->
+        <div class="scatter-plot-container">
             <canvas id="shootingScatterPlot"></canvas>
         </div>
+        
         <!-- Heatmap -->
-        {% if heatmap_data %}
-            <img src="data:image/png;base64,{{ heatmap_data }}" alt="{{ player.PLAYER }} Heatmap" style="width: 37%;">
-        {% else %}
-            <p>No heatmap available for this player.</p>
-        {% endif %}        
-        <!-- Radar chart 
-        {% if player_chart %}
-            {% set chart_url = url_for('static', filename=player_chart) %}
-            <script>console.log("Chart URL:", {{ chart_url|tojson|safe }});</script>
-            <img src="{{ chart_url }}" alt="{{ player.PLAYER }} Radar Chart" style="width: 25%;">
-        {% else %}
-            <p>No radar chart available for this player.</p>
-        {% endif %}
-    -->
+        <div class="heatmap-container">
+            {% if heatmap_data %}
+                <img src="data:image/png;base64,{{ heatmap_data }}" alt="{{ player.PLAYER }} Heatmap">
+            {% else %}
+                <p>No heatmap available for this player.</p>
+            {% endif %}
+        </div>
     </div>
+    <div class="data-table-container">
+    <table id="additional-stats-table" class="table table-striped" style="font-size: 11px;">
+        <thead class="thead-dark">
+            <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>Team</th>
+                <th>GP</th>
+                <th>MIN</th>
+                <th>PTS</th>
+                <th>FGM</th>
+                <th>FGA</th>
+                <th>FG%</th>
+                <th>FG3M</th>
+                <th>FG3A</th>
+                <th>FG3%</th>
+                <th>FTM</th>
+                <th>FTA</th>
+                <th>FT%</th>
+                <th>OREB</th>
+                <th>DREB</th>
+                <th>REB</th>
+                <th>AST</th>
+                <th>STL</th>
+                <th>BLK</th>
+                <th>TOV</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ player.RANK }}</td>
+                <td>{{ player.PLAYER }}</td>
+                <td>{{ player.TEAM }}</td>
+                <td>{{ player.GP }}</td>
+                <td>{{ player.MIN }}</td>
+                <td>{{ player.PTS }}</td>
+                <td>{{ player.FGM }}</td>
+                <td>{{ player.FGA }}</td>
+                <td>{{ player.FG_PCT }}</td>
+                <td>{{ player.FG3M }}</td>
+                <td>{{ player.FG3A }}</td>
+                <td>{{ player.FG3_PCT }}</td>
+                <td>{{ player.FTM }}</td>
+                <td>{{ player.FTA }}</td>
+                <td>{{ player.FT_PCT }}</td>
+                <td>{{ player.OREB }}</td>
+                <td>{{ player.DREB }}</td>
+                <td>{{ player.REB }}</td>
+                <td>{{ player.AST }}</td>
+                <td>{{ player.STL }}</td>
+                <td>{{ player.BLK }}</td>
+                <td>{{ player.TOV }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+    <!-- Data Table Container -->
+    <div class="data-table-container">
+        <table id="player-stats-table" class="table table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Advanced Stat</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>True Shooting (%)</td>
+                    <td>{{ '%0.1f'|format(((player.PTS) / (2 * (player.FGA + 0.44 * player.FTA))) * 100|float) }}</td>
+
+                </tr>
+                <tr>
+                    <td>Effective Field Goal (%)</td>
+                    <td>{{ '%0.1f'|format(((player.FGM + 0.5 * (player.FG3M)) / ((player.FGA))) * 100|float) }}</td>
+                </tr>
+                <tr>
+                    <td>Points Produced (%)</td>
+                    <td>
+                        {% if team %}
+                            {{ '%0.1f'|format(((player.PTS + player.AST) / team.points) * 100) }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                </tr>
+                <!-- Add more rows for other stats -->
+            </tbody>
+        </table>
+    </div>
+    <!-- Additional Row -->
+
 
     <script>
 document.addEventListener('DOMContentLoaded', (event) => {
     // Extracting data for the scatter plot
     var shootingData = {
-        labels: ['FG%'],
+        labels: ['FG%', 'League Average'],
         datasets: [
             {
                 label: 'Field Goals Overall',
-                backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                data: [{x: {{ player.FG_PCT }}, y: {{ player.FGM }}}], // Adjust the data accordingly
+                backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(75, 192, 192, 1)'],
+                borderColor: ['rgba(75, 192, 192, 1)', 'rgba(75, 192, 192, 1)'],
+                data: [
+                    { x: {{ player.FG_PCT }}, y: {{ player.FGM }} },
+                    { x: {{ league_averages.FG_PCT }}, y: {{ league_averages.FGM }} }  // Adjust Y value as needed
+                ],
             },
             {
                 label: 'Three-Pointer Shooting',
-                backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                borderColor: 'rgba(255, 99, 132, 1)',
-                data: [{x: {{ player.FG3_PCT }}, y: {{ player.FG3M }}}], // Adjust the data accordingly
+                backgroundColor: ['rgba(255, 99, 132, 0.5)', 'rgba(255, 99, 132, 1)'],
+                borderColor: ['rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 1)'],
+                data: [
+                    { x: {{ player.FG3_PCT }}, y: {{ player.FG3M }} },
+                    { x: {{ league_averages.FG3_PCT }}, y: {{ league_averages.FG3M }} }  // Adjust Y value as needed
+                ],
             },
             {
                 label: 'Free Throw Shooting',
-                backgroundColor: 'rgba(255, 205, 86, 0.5)',
-                borderColor: 'rgba(255, 205, 86, 1)',
-                data: [{x: {{ player.FT_PCT }}, y: {{ player.FTM }}}], // Adjust the data accordingly
+                backgroundColor: ['rgba(255, 205, 86, 0.5)', 'rgba(255, 205, 86, 1)'],
+                borderColor: ['rgba(255, 205, 86, 1)', 'rgba(255, 205, 86, 1)'],
+                data: [
+                    { x: {{ player.FT_PCT }}, y: {{ player.FTM }} },
+                    { x: {{ league_averages.FT_PCT }}, y: {{ league_averages.FTM }} }  // Adjust Y value as needed
+                ],
             },
         ],
     };
@@ -84,9 +199,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     },
                 },
             },
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        filter: function (item, chart) {
+                            // Filter out the 'League Average' label from the legend
+                            return item.text !== 'League Average';
+                        },
+                    },
+                },
+            },
         },
     });
+    $(document).ready(function () {
+                $('#player-stats-table').DataTable();
+            });
 });
 </script>
+
+
 
 {% endblock %}

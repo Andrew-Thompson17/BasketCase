@@ -15,57 +15,100 @@
 
     <!-- Add your custom CSS styles -->
     <style>
-        table {
-            width: 100%;
-            margin-top: 0px;
-            background-color: #2c3e50;
-            color: #ecf0f1;
-        }
+    body {
+        background-color: #2c3e50;
+        margin: 0; /* Remove default margin */
+        overflow-x: hidden; /* Hide horizontal scrollbar */
+    }
 
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #34495e;
-            color: #ecf0f1;
-        }
+    table {
+        width: 100%;
+        margin-top: 0px;
+        background-color: #2c3e50;
+        color: #ecf0f1;
+        table-layout: fixed; /* Fixed layout for the table */
+    }
 
-        thead {
-            background-color: #2c3e50;
-            color: #ecf0f1;
-        }
+    th, td {
+        padding: 10px; /* Reduce padding for a more compact layout */
+        text-align: left;
+        border-bottom: 1px solid #34495e;
+        color: #ecf0f1;
+        white-space: nowrap; /* Prevent text wrapping */
+        font-size: 12px; /* Reduce font size for all cells */
+    }
 
-        tbody tr:nth-child(even) {
-            background-color: #34495e;
-        }
+    .player-link {
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis; /* Keep ellipsis for player names */
+        font-size: 12px; /* Set the font size for player names */
+        max-width: 200px; /* Adjust the maximum width as needed */
+    }
 
-        tbody tr:nth-child(odd) {
-            background-color: #2c3e50;
-        }
+    /* Set a specific width for the player name column */
+    th:nth-child(2),
+    td:nth-child(2) {
+        width: 200px; /* Adjust the width as needed */
+    }
 
-        /* Add this style for the player link */
-        .player-link {
-            color: #ecf0f1; /* Set the text color */
-            text-decoration: none; /* Remove the underline */
-            cursor: pointer; /* Change cursor on hover to indicate it's clickable */
-        }
+    /* Adjust font size for column headers */
+    th {
+        font-size: 11px; /* Set the font size for column headers */
+    }
 
-        .player-link:hover {
-            text-decoration: underline; /* Add underline on hover */
-        }
-    </style>
+    thead {
+        background-color: #2c3e50;
+        color: #ecf0f1;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #34495e;
+    }
+
+    tbody tr:nth-child(odd) {
+        background-color: #2c3e50;
+    }
+
+    .player-link {
+        color: #ecf0f1;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .player-link:hover {
+        text-decoration: underline;
+    }
+</style>
 
     <!-- Bootstrap table classes -->
     <table class="table table-striped" id="player-table">
         <thead class="thead-dark">
             <tr>
-                <th>Rank</th>
+                <th>#</th>
                 <th>Player</th>
                 <th>Team</th>
+                <th>GP</th>
+                <th>MIN</th>
                 <th>PTS</th>
-                <th>AST</th>
-                <th>REB</th>
+                <th>FGM</th>
+                <th>FGA</th>
                 <th>FG%</th>
+                <th>3PM</th>
+                <th>3PA</th>
+                <th>3P%</th>
+                <th>FTM</th>
+                <th>FTA</th>
+                <th>FT%</th>
+                <th>OREB</th>
+                <th>DREB</th>
+                <th>REB</th>
+                <th>AST</th>
+                <th>STL</th>
+                <th>BLK</th>
+                <th>TOV</th>
                 <th>EFF</th>
+                
                 <!-- Add other column headers as needed -->
             </tr>
         </thead>
@@ -75,12 +118,27 @@
                     <td>{{ player.RANK }}</td>
                     <td><a href="{{ url_for('player_details', player_name=player.PLAYER) }}" class="player-link">{{ player.PLAYER }}</a></td>
                     <td>{{ player.TEAM }}</td>
+                    <td>{{ player.GP }}</td>
+                    <td>{{ player.MIN }}</td>
                     <td>{{ player.PTS }}</td>
-                    <td>{{ player.AST }}</td>
-                    <td>{{ player.REB }}</td>
+                    <td>{{ player.FGM }}</td>
+                    <td>{{ player.FGA }}</td>
                     <td>{{ player.FG_PCT }}</td>
+                    <td>{{ player.FG3M }}</td>
+                    <td>{{ player.FG3A }}</td>
+                    <td>{{ player.FG3_PCT }}</td>
+                    <td>{{ player.FTM }}</td>
+                    <td>{{ player.FTA }}</td>
+                    <td>{{ player.FT_PCT }}</td>
+                    <td>{{ player.OREB }}</td>
+                    <td>{{ player.DREB }}</td>
+                    <td>{{ player.REB }}</td>
+                    <td>{{ player.AST }}</td>
+                    <td>{{ player.STL }}</td>
+                    <td>{{ player.BLK }}</td>
+                    <td>{{ player.TOV }}</td>
                     <td>{{ player.EFF }}</td>
-                    <!-- Add other columns as needed -->
+                    
                 </tr>
             {% endfor %}
         </tbody>
