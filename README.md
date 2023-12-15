@@ -8,3 +8,5 @@ How to run:
     flask run
   in the terminal. Hold CTRL and click on the provided link in the terminal, and a local browser will be accessed, allowing you to use the website. 
   If there are any issues running, please email me at andrewt1717@gmail.com, and I can help go over any issues running.
+
+Demo: https://youtu.be/f4gLLyWXcKM?si=zRPTTKrYkE5dBUDs
