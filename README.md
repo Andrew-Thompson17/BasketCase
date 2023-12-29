@@ -10,3 +10,6 @@ How to run:
   If there are any issues running, please email me at andrewt1717@gmail.com, and I can help go over any issues running.
 
 Demo: https://youtu.be/f4gLLyWXcKM?si=zRPTTKrYkE5dBUDs
+
+Current restrictions: Restricted to 2022/2023 season, and some players are not available due to time constraints. This was created as a class final, but I
+plan to continue to update it fully.
